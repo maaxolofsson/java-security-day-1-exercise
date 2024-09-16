@@ -1,0 +1,232 @@
+openapi: 3.1.0
+info:
+  title: Java API Cinema Challenge - Core Criteria
+  description: Core Criteria for the Java Scinema Booking Challenge
+  version: 0.2.3
+  contact:
+    name: Cinema Book Challenge
+
+servers:
+  - url: http://localhost:4000
+tags:
+  - name: games
+
+paths:
+  /games:
+    post:
+      tags:
+        - games
+      summary: Create a game
+      description: Create a new game.
+      operationId: creategame
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Creategame'
+      responses:
+        '201':
+          description: Successfully created a new game
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleGame'
+        '403':
+          description: Could not create game; user not logged in.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+    get:
+      tags:
+        - games
+      summary: Get all games
+      description: Get a list of every game.
+      operationId: getgames
+      responses:
+        '200':
+          description: Get a list of all games
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Allgames'
+        '403':
+          description: Could not create game; user not logged in.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+  /games/{id}:
+    put:
+      tags:
+        - games
+      summary: Update a game
+      description: Update an existing game. For ease of implementation, all fields are required from the client.
+      operationId: updategame
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the game to update
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Creategame'
+      responses:
+        '201':
+          description: Successfully updated the specified game
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleGame'
+        '403':
+          description: Could not create game; user not logged in.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        '404':
+          description: Could not map given ID to a game.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+    delete:
+      tags:
+        - games
+      summary: Delete a game
+      description: Delete an existing game.
+      operationId: deletegame
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the game to delete
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully deleted the specified game
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleGame'
+        '403':
+          description: Could not create game; user not logged in.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        '404':
+          description: Could not map given ID to a game.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+
+components:
+  schemas:
+    Creategame:
+      type: object
+      required: [ title, genre, gameStudio, ageRating, numberOfPlayers ]
+      properties:
+        title:
+          type: string
+          example: "Counter Strike"
+        genre:
+          type: string
+          example: "FPS"
+        gameStudio:
+          type: string
+          example: "Valve"
+        ageRating:
+          type: integer
+          example: 16
+        numberOfPlayers:
+          type: integer
+          example: 10
+    Game:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Counter Strike"
+        genre:
+          type: string
+          example: "FPS"
+        gameStudio:
+          type: string
+          example: "Valve"
+        ageRating:
+          type: integer
+          example: 16
+        numberOfPlayers:
+          type: integer
+          example: 10
+    SingleGame:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        data:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            title:
+              type: string
+              example: "Counter Strike"
+            genre:
+              type: string
+              example: "FPS"
+            gameStudio:
+              type: string
+              example: "Valve"
+            ageRating:
+              type: integer
+              example: 16
+            numberOfPlayers:
+              type: integer
+              example: 10
+    Allgames:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Game'
+    Error403:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "error"
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "forbidden"
+    Error404:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "error"
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "not found"
