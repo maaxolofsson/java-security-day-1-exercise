@@ -1,10 +1,13 @@
 package com.booleanuk.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -27,7 +30,16 @@ public class User {
     @Column
     private String email;
 
+    @OneToMany(mappedBy = "user")
+    @JsonIgnoreProperties("user")
+    private List<Lend> lends;
+
     public User(int id) {
         this.id = id;
     }
+
+    public void addLend(Lend l) {
+        this.lends.add(l);
+    }
+
 }
