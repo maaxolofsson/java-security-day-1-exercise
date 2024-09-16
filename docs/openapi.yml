@@ -1,10 +1,10 @@
 openapi: 3.1.0
 info:
-  title: Java API Cinema Challenge - Core Criteria
-  description: Core Criteria for the Java Scinema Booking Challenge
-  version: 0.2.3
+  title: Game library
+  description: Core Criteria for java-security-day-1
+  version: "0.1"
   contact:
-    name: Cinema Book Challenge
+    name: Game library
 
 servers:
   - url: http://localhost:4000
