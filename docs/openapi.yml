@@ -10,6 +10,8 @@ servers:
   - url: http://localhost:4000
 tags:
   - name: games
+  - name: users
+  - name: lends
 
 paths:
   /games:
@@ -242,6 +244,63 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error404'
+  /lend:
+    post:
+      tags:
+        - lends
+      summary: Register a new game for the user to borrow.
+      description: Given a game and user, register the user to borrow the game.
+      operationId: borrowRequest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorrowRequest'
+      responses:
+        '201':
+          description: Successfully created a new borrow
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleUser'
+        '400':
+          description: Given item is already lent out.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '404':
+          description: Could not map given IDs to a user or a game.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+  /lend/return:
+    post:
+      tags:
+        - lends
+      summary: Make the user return the given game.
+      description: Given a game and user, make the user return the game.
+      operationId: returnRequest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorrowRequest'
+      responses:
+        '201':
+          description: Successfully returned the game.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleUser'
+        '404':
+          description: Could not map given IDs to a borrowing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+
 
 components:
   schemas:
@@ -406,3 +465,25 @@ components:
             message:
               type: string
               example: "not found"
+    Error400:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "error"
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "game already borrowed"
+    BorrowRequest:
+      type: object
+      properties:
+        userId:
+          type: integer
+          example: 1
+        gameId:
+          type: integer
+          example: 1
+        
