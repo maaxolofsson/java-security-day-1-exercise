@@ -1,11 +1,15 @@
 package com.booleanuk.api.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -24,8 +28,9 @@ public class Lend {
     @JsonIgnoreProperties("lends")
     private User user;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "game_id")
+    @JsonIgnoreProperties("lends")
     private Game game;
 
     @Column

@@ -1,5 +1,6 @@
 package com.booleanuk.api.controller;
 
+import com.booleanuk.api.model.DTO.LendDTO;
 import com.booleanuk.api.model.Game;
 import com.booleanuk.api.model.Lend;
 import com.booleanuk.api.model.User;
@@ -15,8 +16,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+
 @RestController
-@RequestMapping("lends")
+@RequestMapping("lend")
 public class LendController {
 
     @Autowired
@@ -28,36 +31,61 @@ public class LendController {
     @Autowired
     private GameRepository games;
 
-    @PostMapping("{user_id}")
-    public ResponseEntity<Response<?>> newLend() {
-        Lend toAdd = new Lend();
-        User user = this.users.findById(toAdd.getUser().getId()).orElse(null);
+    @PostMapping
+    public ResponseEntity<Response<?>> newLend(@RequestBody LendDTO request) {
+        User user = this.users.findById(request.getUserId().getId()).orElse(null);
 
-        Game game = this.games.findById(toAdd.getGame().getId()).orElse(null);
+        Game game = this.games.findById(request.getGameId().getId()).orElse(null);
 
         if (user == null || game == null) {
             ErrorResponse errorResponse = new ErrorResponse("not found");
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         }
 
-        toAdd.setUser(user);
-        toAdd.setGame(game);
-        user.addLend(toAdd);
+        if(game.isOccupied()){
+            ErrorResponse errorResponse = new ErrorResponse("game is occupied");
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
 
-        this.lends.save(toAdd);
+        game.setOccupied(true);
+        Lend lend = new Lend(request.getUserId(), request.getGameId(), true);
+
+        this.lends.save(lend);
+        user.addLend(lend);
+        game.addLend(lend);
 
         LendResponse lendResponse = new LendResponse();
-        lendResponse.set(toAdd);
+        lendResponse.set(lend);
 
         return new ResponseEntity<>(lendResponse, HttpStatus.CREATED);
     }
 
-    @GetMapping("{user_id}/active")
-    public ResponseEntity<LendListResponse> getActiveLends() {
-        int userId = 1;
-        LendListResponse lendListResponse = new LendListResponse();
-        lendListResponse.set(this.lends.findAllByActiveAndUserId(true, userId));
-        return new ResponseEntity<>(lendListResponse, HttpStatus.OK);
+    @PostMapping("/return")
+    public ResponseEntity<Response<?>> returnLend(@RequestBody LendDTO request) {
+        User user = this.users.findById(request.getUserId().getId()).orElse(null);
+
+        Game game = this.games.findById(request.getGameId().getId()).orElse(null);
+
+        if (user == null || game == null) {
+            ErrorResponse errorResponse = new ErrorResponse("not found");
+            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        }
+
+        game.setOccupied(false);
+        this.games.save(game);
+
+        Lend lend = this.lends.findByUserIdAndGameId(user.getId(), game.getId());
+
+        if (lend == null) {
+            ErrorResponse errorResponse = new ErrorResponse("not found");
+            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        }
+
+        lend.setActive(false);
+
+        LendResponse lendResponse = new LendResponse();
+        lendResponse.set(this.lends.save(lend));
+        return new ResponseEntity<>(lendResponse, HttpStatus.OK);
     }
 
 }
